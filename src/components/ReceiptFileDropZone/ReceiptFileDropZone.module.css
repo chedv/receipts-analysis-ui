@@ -1,0 +1,23 @@
+.dropzoneBox {
+  height: 33vh;
+  width: 33vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  background: #f4f6f8;
+}
+
+.fileContentBox {
+  height: 100%;
+  width: 100%;
+}
+
+.uploadImage {
+  max-width: 250px;
+  max-height: 250px;
+}

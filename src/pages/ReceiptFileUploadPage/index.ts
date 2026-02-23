@@ -1,0 +1,1 @@
+export {ReceiptFileUploadPageAsync as ReceiptFileUploadPage} from "./ReceiptFileUploadPage.async.ts";
