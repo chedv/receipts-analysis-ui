@@ -3,7 +3,7 @@ import {config} from "./config.ts";
 import type {
   ReceiptUploadResponseType,
   ReceiptStatusResponseType,
-  ReceiptOcrResultResponseType
+  ReceiptTaskResultResponseType
 } from "./types/ReceiptTaskStatus.ts";
 
 const axiosClient = axios.create({
@@ -35,7 +35,7 @@ export const receiptUpload = async (file: File) => {
   );
 };
 
-export const getReceiptStatuses = async (receiptIds: string[]) => {
+export const getReceiptTaskStatuses = async (receiptIds: string[]) => {
   return await axiosClient.get<Map<string, ReceiptStatusResponseType>>(
     `/receipts/status`,
     {
@@ -47,8 +47,8 @@ export const getReceiptStatuses = async (receiptIds: string[]) => {
   );
 };
 
-export const getReceiptOcrResult = async (receiptId: string) => {
-  return await axiosClient.get<ReceiptOcrResultResponseType>(
+export const getReceiptTaskResult = async (receiptId: string) => {
+  return await axiosClient.get<ReceiptTaskResultResponseType>(
     `/receipts/result/${receiptId}`,
   ).then(
     (response) => response.data

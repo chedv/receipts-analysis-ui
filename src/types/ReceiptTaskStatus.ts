@@ -14,6 +14,12 @@ export type ReceiptStatusResponseType = {
   detail: string | null;
 };
 
-export type ReceiptOcrResultResponseType = {
+export type ReceiptTaskResultResponseType = {
   receipt_text: any;
+};
+
+export type ReceiptStatusesType = {
+  receipt_id: string;
+  status: ReceiptTaskStatus;
+  detail: string | null;
 };

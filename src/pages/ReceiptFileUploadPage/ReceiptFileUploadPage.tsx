@@ -1,11 +1,15 @@
 import {Box, Button} from "@mui/material";
-import {getReceiptStatuses, receiptUpload} from "../../api.ts";
+import {getReceiptTaskStatuses, receiptUpload} from "../../api.ts";
 import {useEffect, useState} from "react";
 import ReceiptFileDropZone from "../../components/ReceiptFileDropZone/ReceiptFileDropZone.tsx";
 import sx from "./ReceiptFileUploadPage.module.css";
 import {sleep} from "../../utils/commonUtils.ts";
 import {config} from "../../config.ts";
-import {type ReceiptStatusResponseType, ReceiptTaskStatus} from "../../types/ReceiptTaskStatus.ts";
+import {
+  type ReceiptStatusesType,
+  type ReceiptStatusResponseType,
+  ReceiptTaskStatus
+} from "../../types/ReceiptTaskStatus.ts";
 import {type FileType, NotificationLevelType} from "../../types/commonTypes.ts";
 import {useDispatch} from "react-redux";
 import {addNotification} from "../../store/notificationReducer.ts";
@@ -13,6 +17,7 @@ import {addNotification} from "../../store/notificationReducer.ts";
 const ReceiptFileUploadPage = () => {
   const [files, setFiles] = useState<FileType[]>([]);
   const [receiptIds, setReceiptIds] = useState<string[]>([]);
+  const [receiptStatuses, setReceiptStatuses] = useState<ReceiptStatusesType[]>([]);
   const dispatch = useDispatch();
 
   const onClick = async () => {
@@ -31,7 +36,7 @@ const ReceiptFileUploadPage = () => {
     const controller = new AbortController();
     let receiptIdsForStatuses = new Set<string>(receiptIds);
 
-    const processReceiptOcrTaskStatus = (receiptId: string, responseData: ReceiptStatusResponseType) => {
+    const processReceiptTaskStatus = (receiptId: string, responseData: ReceiptStatusResponseType) => {
       if (responseData.status === ReceiptTaskStatus.success || responseData.status === ReceiptTaskStatus.failed) {
         receiptIdsForStatuses.delete(receiptId);
         if (responseData.status === ReceiptTaskStatus.failed) {
@@ -43,22 +48,31 @@ const ReceiptFileUploadPage = () => {
         }
       }
     };
-    const pollReceiptOcrTaskStatuses = async () => {
+    const pollReceiptTaskStatuses = async () => {
       while (!controller.signal.aborted) {
-        const responseData = await getReceiptStatuses(receiptIds);
+        const responseData = await getReceiptTaskStatuses(receiptIds);
         if (!isMounted) {
           return;
         }
-        Array.from(responseData.entries()).map(([receiptId, receiptStatus]) => {
-          processReceiptOcrTaskStatus(receiptId, receiptStatus);
-        });
+        Array.from(responseData.entries()).map(([receiptId, receiptStatus]) =>
+          processReceiptTaskStatus(receiptId, receiptStatus)
+        );
         if (receiptIdsForStatuses.size === 0) {
+          const receiptStatusesResult = Array.from(responseData.entries()).map(([receiptId, receiptStatus]) => {
+            return {
+              receipt_id: receiptId,
+              status: receiptStatus.status,
+              detail: receiptStatus.detail,
+            };
+          });
+          setReceiptStatuses(receiptStatusesResult);
+          setReceiptIds([]);
           break;
         }
-        await sleep(config.pollReceiptOcrTaskStatusIntervalMs);
+        await sleep(config.pollReceiptTaskStatusIntervalMs);
       }
     };
-    pollReceiptOcrTaskStatuses();
+    pollReceiptTaskStatuses();
     return () => {
       isMounted = false;
       controller.abort();
@@ -82,6 +96,17 @@ const ReceiptFileUploadPage = () => {
         >
           Upload
         </Button>
+      </Box>
+      <Box>
+        {
+          receiptStatuses.map(receiptStatus => (
+            <Box>
+              <Box>{receiptStatus.receipt_id}</Box>
+              <Box>{receiptStatus.status}</Box>
+              <Box>{receiptStatus.detail}</Box>
+            </Box>
+          ))
+        }
       </Box>
     </Box>
   );

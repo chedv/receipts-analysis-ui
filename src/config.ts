@@ -3,7 +3,7 @@ export type Config = {
   auth0ClientId: string;
   auth0ApiAudience: string;
   apiBaseURL: string;
-  pollReceiptOcrTaskStatusIntervalMs: number;
+  pollReceiptTaskStatusIntervalMs: number;
 };
 
 export const config: Config = {
@@ -11,5 +11,5 @@ export const config: Config = {
   auth0ClientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
   auth0ApiAudience: import.meta.env.VITE_AUTH0_API_AUDIENCE,
   apiBaseURL: import.meta.env.VITE_API_BASE_URL,
-  pollReceiptOcrTaskStatusIntervalMs: import.meta.env.VITE_POLL_RECEIPT_OCR_TASK_STATUS_INTERVAL_MS,
+  pollReceiptTaskStatusIntervalMs: import.meta.env.VITE_POLL_RECEIPT_TASK_STATUS_INTERVAL_MS,
 };
