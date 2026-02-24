@@ -23,9 +23,9 @@ export const addAccessTokenInterceptor = (getAccessTokenSilently: () => Promise<
   );
 };
 
-export const receiptUpload = async (fileContent: Blob, fileName: string) => {
+export const receiptUpload = async (file: File) => {
   const form = new FormData();
-  form.append("receipt_file", fileContent, fileName);
+  form.append("receipt_file", file, file.name);
 
   return await axiosClient.post<ReceiptUploadResponseType>(
     "/receipts/upload",
@@ -35,9 +35,13 @@ export const receiptUpload = async (fileContent: Blob, fileName: string) => {
   );
 };
 
-export const getReceiptStatus = async (receiptId: string) => {
-  return await axiosClient.get<ReceiptStatusResponseType>(
-    `/receipts/status/${receiptId}`,
+export const getReceiptStatuses = async (receiptIds: string[]) => {
+  return await axiosClient.get<Map<string, ReceiptStatusResponseType>>(
+    `/receipts/status`,
+    {
+      params: {receipt_ids: receiptIds},
+      paramsSerializer: { indexes: null },
+    }
   ).then(
     (response) => response.data
   );

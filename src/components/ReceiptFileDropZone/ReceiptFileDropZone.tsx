@@ -1,49 +1,54 @@
-import {useCallback} from "react";
+import {useEffect} from "react";
 import {useDropzone} from "react-dropzone";
-import {Box, Typography} from "@mui/material";
+import {Box, Button, Typography} from "@mui/material";
 import sx from "./ReceiptFileDropZone.module.css";
+import type {FileType} from "../../types/commonTypes.ts";
 
 type ReceiptFileDropZoneProps = {
-  fileContent: Blob | null;
-  setFileContent: (fileContent: Blob) => void;
-  fileName: string;
-  setFileName: (fileName: string) => void;
+  files: FileType[];
+  setFiles: (files: FileType[]) => void;
 }
 
-const ReceiptFileDropZone = ({fileContent, setFileContent, fileName, setFileName}: ReceiptFileDropZoneProps) => {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    acceptedFiles.forEach((file: File) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const fileBuffer = reader.result;
-        if (fileBuffer instanceof ArrayBuffer) {
-          const extname = file.name.split(".").pop();
-          const imageBlob = new Blob([fileBuffer], {type: `image/${extname}`});
-          setFileContent(imageBlob);
-          setFileName(file.name);
-        }
-      }
-      reader.readAsArrayBuffer(file);
-    })
-  }, [])
-  const {getRootProps, getInputProps} = useDropzone({onDrop});
+const ReceiptFileDropZone = ({files, setFiles}: ReceiptFileDropZoneProps) => {
+  const {getRootProps, getInputProps, open} = useDropzone({
+    accept: {
+      'image/*': []
+    },
+    onDrop: acceptedFiles => {
+      setFiles(acceptedFiles.map(file => Object.assign(file, {
+        preview: URL.createObjectURL(file)
+      })));
+    }
+  });
+
+  const thumbs = files.map(file => (
+    <div className={sx.thumb} key={file.name}>
+      <div className={sx.thumbInner}>
+        <img
+          src={file.preview}
+          className={sx.img}
+          onLoad={() => {URL.revokeObjectURL(file.preview)}}
+        />
+      </div>
+    </div>
+  ));
+
+  useEffect(() => {
+    return () => files.forEach(file => URL.revokeObjectURL(file.preview));
+  }, [files]);
 
   return (
     <Box className={sx.dropzoneBox} {...getRootProps()}>
       <input {...getInputProps()}/>
-      {
-        !fileContent &&
-          <Typography variant="h5">
-              Drag 'n' drop receipt image here, or click to select file
-          </Typography>
-      }
-      {
-        fileContent &&
-          <Box className={sx.fileContentBox}>
-            <img className={sx.uploadImage} src="/assets/file.png" alt={fileName}/>
-            <Typography variant="h6">{fileName}</Typography>
-          </Box>
-      }
+      <Typography variant="h5">
+        Drag 'n' drop receipt image here, or click to select file
+      </Typography>
+      <Button onClick={open}>
+        Open File Dialog
+      </Button>
+      <aside className={sx.thumbsContainer}>
+        {thumbs}
+      </aside>
     </Box>
   );
 };

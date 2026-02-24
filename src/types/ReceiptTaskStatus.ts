@@ -11,6 +11,7 @@ export enum ReceiptTaskStatus {
 
 export type ReceiptStatusResponseType = {
   status: ReceiptTaskStatus;
+  detail: string | null;
 };
 
 export type ReceiptOcrResultResponseType = {
