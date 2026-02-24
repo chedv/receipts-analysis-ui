@@ -31,7 +31,7 @@ const ReceiptFileUploadPage = () => {
     const controller = new AbortController();
     let receiptIdsForStatuses = new Set<string>(receiptIds);
 
-    const processReceiptOcrTaskStatus = async (receiptId: string, responseData: ReceiptStatusResponseType) => {
+    const processReceiptOcrTaskStatus = (receiptId: string, responseData: ReceiptStatusResponseType) => {
       if (responseData.status === ReceiptTaskStatus.success || responseData.status === ReceiptTaskStatus.failed) {
         receiptIdsForStatuses.delete(receiptId);
         if (responseData.status === ReceiptTaskStatus.failed) {
@@ -49,11 +49,9 @@ const ReceiptFileUploadPage = () => {
         if (!isMounted) {
           return;
         }
-        await Promise.all(
-          Array.from(responseData.entries()).map(async ([receiptId, receiptStatus]) => {
-            await processReceiptOcrTaskStatus(receiptId, receiptStatus);
-          })
-        );
+        Array.from(responseData.entries()).map(([receiptId, receiptStatus]) => {
+          processReceiptOcrTaskStatus(receiptId, receiptStatus);
+        });
         if (receiptIdsForStatuses.size === 0) {
           break;
         }
