@@ -36,7 +36,7 @@ export const receiptUpload = async (file: File) => {
 };
 
 export const getReceiptTaskStatuses = async (receiptIds: string[]) => {
-  return await axiosClient.get<Map<string, ReceiptStatusResponseType>>(
+  return await axiosClient.get<Record<string, ReceiptStatusResponseType>>(
     `/receipts/status`,
     {
       params: {receipt_ids: receiptIds},

@@ -2,7 +2,7 @@ import {useEffect} from "react";
 import {useDropzone} from "react-dropzone";
 import {Box, Button, Typography} from "@mui/material";
 import sx from "./ReceiptFileDropZone.module.css";
-import type {FileType} from "../../types/commonTypes.ts";
+import type {FileType} from "../../../types/commonTypes.ts";
 
 type ReceiptFileDropZoneProps = {
   files: FileType[];
@@ -38,18 +38,29 @@ const ReceiptFileDropZone = ({files, setFiles}: ReceiptFileDropZoneProps) => {
   }, [files]);
 
   return (
-    <Box className={sx.dropzoneBox} {...getRootProps()}>
-      <input {...getInputProps()}/>
-      <Typography variant="h5">
-        Drag 'n' drop receipt image here, or click to select file
-      </Typography>
-      <Button onClick={open}>
-        Open File Dialog
-      </Button>
-      <aside className={sx.thumbsContainer}>
-        {thumbs}
-      </aside>
-    </Box>
+    <>
+      <Box className={sx.dropzoneBox} {...getRootProps()}>
+        <input {...getInputProps()}/>
+        <Typography variant="h5">
+          Drag 'n' drop receipt image here, or click to select file
+        </Typography>
+        <Box className={sx.openFileDialogButtonBox}>
+          <Button variant="contained" size="large" onClick={
+            (event) => {
+              event.stopPropagation();
+              open();
+            }
+          }>
+            Open File Dialog
+          </Button>
+        </Box>
+      </Box>
+      <Box className={sx.thumbsBox}>
+        <aside className={sx.thumbsContainer}>
+          {thumbs}
+        </aside>
+      </Box>
+    </>
   );
 };
 

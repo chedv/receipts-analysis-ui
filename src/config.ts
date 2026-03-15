@@ -4,6 +4,7 @@ export type Config = {
   auth0ApiAudience: string;
   apiBaseURL: string;
   pollReceiptTaskStatusIntervalMs: number;
+  pollReceiptTaskStatusAttemptCount: number;
 };
 
 export const config: Config = {
@@ -12,4 +13,5 @@ export const config: Config = {
   auth0ApiAudience: import.meta.env.VITE_AUTH0_API_AUDIENCE,
   apiBaseURL: import.meta.env.VITE_API_BASE_URL,
   pollReceiptTaskStatusIntervalMs: import.meta.env.VITE_POLL_RECEIPT_TASK_STATUS_INTERVAL_MS,
+  pollReceiptTaskStatusAttemptCount: import.meta.env.VITE_POLL_RECEIPT_TASK_STATUS_ATTEMPT_COUNT,
 };

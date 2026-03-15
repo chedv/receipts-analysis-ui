@@ -12,3 +12,7 @@ export type NotificationType = {
   level: NotificationLevelType;
   message: string;
 }
+
+export type UUIDNotificationType = NotificationType & {
+  uuid: string;
+}

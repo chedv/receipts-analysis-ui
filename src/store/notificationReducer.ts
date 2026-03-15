@@ -1,8 +1,8 @@
 import {createSlice, type PayloadAction} from '@reduxjs/toolkit';
-import type {NotificationType} from "../types/commonTypes.ts";
+import type {NotificationType, UUIDNotificationType} from "../types/commonTypes.ts";
 
 export type NotificationStateType = {
-  notificationsList: NotificationType[];
+  notificationsList: UUIDNotificationType[];
 };
 
 const initialState: NotificationStateType = {
@@ -14,11 +14,14 @@ export const notificationSlice = createSlice({
   initialState: initialState,
   reducers: {
     addNotification: (state, action: PayloadAction<NotificationType>) => {
-      state.notificationsList = [...state.notificationsList, action.payload];
+      state.notificationsList = [...state.notificationsList, {uuid: crypto.randomUUID(), ...action.payload}];
+    },
+    removeNotification: (state, {payload}: PayloadAction<{uuid: string}>) => {
+      state.notificationsList = state.notificationsList.filter(notification => notification.uuid !== payload.uuid);
     }
   }
 });
 
-export const { addNotification } = notificationSlice.actions;
+export const { addNotification, removeNotification } = notificationSlice.actions;
 
 export default notificationSlice.reducer;

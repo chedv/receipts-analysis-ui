@@ -1,4 +1,4 @@
-import {ReceiptFileUploadPage} from "./pages/ReceiptFileUploadPage";
+import {ReceiptFileUploadPage} from "./components/pages/ReceiptFileUploadPage";
 import {BrowserRouter, Routes, Route} from "react-router-dom";
 
 

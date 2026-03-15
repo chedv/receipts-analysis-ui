@@ -4,15 +4,17 @@ import AuthProvider from "./auth/AuthProvider.tsx";
 import AuthRequiredWrapper from "./auth/AuthRequiredWrapper.tsx";
 import AuthTokenInterceptor from "./auth/AuthTokenInterceptor.tsx";
 import {Provider} from "react-redux";
-import store from "./store/store.ts";
+import {store} from "./store/store.ts";
+import NotificationPopups from "./components/modules/NotificationPopups/NotificationPopups.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <AuthProvider>
     <AuthRequiredWrapper>
       <Provider store={store}>
         <AuthTokenInterceptor/>
+        <NotificationPopups/>
         <App/>
       </Provider>
     </AuthRequiredWrapper>
-  </AuthProvider>,
+  </AuthProvider>
 )
