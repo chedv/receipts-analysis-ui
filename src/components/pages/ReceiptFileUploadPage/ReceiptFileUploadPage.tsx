@@ -23,8 +23,19 @@ const ReceiptFileUploadPage = () => {
     if (files.length === 0){
       return;
     }
-    const responseDataList = await Promise.all(files.map(file => receiptUpload(file)));
-    setReceiptIds(responseDataList.map(responseData => responseData.receipt_id));
+    const promiseResults = await Promise.allSettled(files.map(file => receiptUpload(file)));
+    const responseReceiptIds: string[] = [];
+    promiseResults.forEach((promiseResult, index) => {
+      if (promiseResult.status === "fulfilled") {
+        responseReceiptIds.push(promiseResult.value.receipt_id);
+      } else {
+        dispatch(addNotification({
+          level: NotificationLevelType.error,
+          message: `Error during uploading file with '${files[index].name}' name`,
+        }));
+      }
+    });
+    setReceiptIds(responseReceiptIds);
   };
 
   useEffect(() => {
@@ -35,36 +46,49 @@ const ReceiptFileUploadPage = () => {
     const controller = new AbortController();
     let pollReceiptTaskStatusAttempt = 1;
 
+    const processReceiptTaskStatuses = async () => {
+      const receiptStatusesById = await getReceiptTaskStatuses(receiptIds);
+      if (!isMounted) {
+        return true;
+      }
+      const receiptStatusesResult = Array.from(
+        Object.entries(receiptStatusesById)
+      ).map(([receiptId, receiptStatus]) => {
+        if (receiptStatus.status === ReceiptTaskStatus.failed) {
+          let detail = `Error during processing '${receiptId}' receipt`;
+          if (receiptStatus.detail) {
+            detail += `: ${receiptStatus.detail}`
+          }
+          dispatch(addNotification({level: NotificationLevelType.error, message: detail}));
+        }
+        return {
+          receipt_id: receiptId,
+          status: receiptStatus.status,
+          detail: receiptStatus.detail,
+        }
+      });
+      setReceiptStatuses(receiptStatusesResult);
+
+      return receiptStatusesResult.every(receiptStatus => (
+          receiptStatus.status === ReceiptTaskStatus.success || receiptStatus.status === ReceiptTaskStatus.failed
+        )
+      );
+    };
+
     const pollReceiptTaskStatuses = async () => {
       while (!controller.signal.aborted) {
-        const receiptStatusesById = await getReceiptTaskStatuses(receiptIds);
-        if (!isMounted) {
-          return;
-        }
-        const receiptStatusesResult = Array.from(
-          Object.entries(receiptStatusesById)
-        ).map(([receiptId, receiptStatus]) => {
-          if (receiptStatus.status === ReceiptTaskStatus.failed) {
-            let detail = `error during processing '${receiptId}' receipt`;
-            if (receiptStatus.detail) {
-              detail += `: ${receiptStatus.detail}`
-            }
-            dispatch(addNotification({level: NotificationLevelType.info, message: detail}));
+        try {
+          const completedStatus = await processReceiptTaskStatuses();
+          if (completedStatus || pollReceiptTaskStatusAttempt === config.pollReceiptTaskStatusAttemptCount) {
+            break;
           }
-          return {
-            receipt_id: receiptId,
-            status: receiptStatus.status,
-            detail: receiptStatus.detail,
-          }
-        });
-        setReceiptStatuses(receiptStatusesResult);
-
-        const completedStatus = receiptStatusesResult.every(receiptStatus => (
-            receiptStatus.status === ReceiptTaskStatus.success || receiptStatus.status === ReceiptTaskStatus.failed
+        } catch {
+          receiptIds.map(receiptId =>
+            dispatch(addNotification({
+              level: NotificationLevelType.error,
+              message: `Error during getting receipt task status by '${receiptId}' UUID`,
+            }))
           )
-        );
-        if (completedStatus || pollReceiptTaskStatusAttempt === config.pollReceiptTaskStatusAttemptCount) {
-          break;
         }
         pollReceiptTaskStatusAttempt += 1;
 
@@ -74,7 +98,7 @@ const ReceiptFileUploadPage = () => {
     pollReceiptTaskStatuses()
       .catch(
         _ => dispatch(
-          addNotification({level: NotificationLevelType.info, message: "error during processing receipts"})
+          addNotification({level: NotificationLevelType.info, message: "Error during processing receipts"})
         )
       );
     return () => {

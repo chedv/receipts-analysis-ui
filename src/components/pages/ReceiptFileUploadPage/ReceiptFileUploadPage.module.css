@@ -6,7 +6,6 @@
   align-items: center;
   justify-content: center;
   gap: 48px;
-  background: linear-gradient(to bottom right, #ecf2fa, #cfe2f7);
 }
 
 .card {

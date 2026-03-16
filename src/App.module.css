@@ -1,3 +1,7 @@
+body {
+  background: linear-gradient(to bottom right, #ecf2fa, #cfe2f7);
+}
+
 .centeredBox {
   display: flex;
   justify-content: center;
